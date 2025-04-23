@@ -59,9 +59,16 @@ $result = $ocon->query($sql);
                             <td><?php echo htmlspecialchars($row['file_name']); ?></td>
                             <td><?php echo $row['file_size_kb'] . ' KB'; ?></td>
                             <td>
-                                <img src="<?php echo htmlspecialchars($row['file_path']); ?>" 
-                                     alt="Thumbnail" 
-                                     style="width: 100px; height: auto;">
+                            <?php
+                            $thumbPath = str_replace('uploads/', 'uploads/thumbs/', $row['file_path']);
+                            if (!file_exists($thumbPath)) {
+                                // Nếu thumbnail không tồn tại, sử dụng ảnh gốc
+                                $thumbPath = $row['file_path'];
+                            }
+                            ?>
+                            <img src="<?php echo htmlspecialchars($thumbPath); ?>" 
+                                alt="Thumbnail" 
+                                style="width: 100px; height: auto;">
                             </td>
                             <td>
                                 <!-- Nút Sửa -->

@@ -8,6 +8,104 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 
+// Hàm nén và resize ảnh
+function compressAndResizeImage($source, $destination, $maxWidth, $maxHeight, $quality) {
+    list($width, $height, $imageType) = getimagesize($source);
+
+    // Tính toán kích thước mới
+    $ratio = $width / $height;
+    if ($maxWidth / $maxHeight > $ratio) {
+        $newWidth = $maxHeight * $ratio;
+        $newHeight = $maxHeight;
+    } else {
+        $newWidth = $maxWidth;
+        $newHeight = $maxWidth / $ratio;
+    }
+
+    // Tạo ảnh mới với kích thước đã chỉnh
+    $newImage = imagecreatetruecolor($newWidth, $newHeight);
+
+    // Tạo ảnh từ file gốc dựa trên loại ảnh
+    switch ($imageType) {
+        case IMAGETYPE_JPEG:
+            $sourceImage = imagecreatefromjpeg($source);
+            break;
+        case IMAGETYPE_PNG:
+            $sourceImage = imagecreatefrompng($source);
+            imagealphablending($newImage, false);
+            imagesavealpha($newImage, true);
+            break;
+        default:
+            return false; // Không hỗ trợ định dạng khác
+    }
+
+    // Resize ảnh
+    imagecopyresampled($newImage, $sourceImage, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+    // Lưu ảnh đã nén
+    switch ($imageType) {
+        case IMAGETYPE_JPEG:
+            imagejpeg($newImage, $destination, $quality);
+            break;
+        case IMAGETYPE_PNG:
+            imagepng($newImage, $destination, round($quality / 10));
+            break;
+    }
+
+    imagedestroy($newImage);
+    imagedestroy($sourceImage);
+
+    return true;
+}
+// Hàm tạo thumbnail (đã chỉnh sửa)
+function createThumbnail($sourcePath, $thumbPath, $thumbWidth = 200) {
+    $imageDetails = getimagesize($sourcePath);
+    $width = $imageDetails[0];
+    $height = $imageDetails[1];
+    $mime = $imageDetails['mime'];
+
+    switch ($mime) {
+        case 'image/jpeg':
+            $img = imagecreatefromjpeg($sourcePath);
+            break;
+        case 'image/png':
+            $img = imagecreatefrompng($sourcePath);
+            imagealphablending($img, false);
+            imagesavealpha($img, true);
+            break;
+        default:
+            return false;
+    }
+
+    $thumbHeight = floor($height * ($thumbWidth / $width));
+    $thumbImg = imagecreatetruecolor($thumbWidth, $thumbHeight);
+
+    // Xử lý alpha cho PNG
+    if ($mime === 'image/png') {
+        imagealphablending($thumbImg, false);
+        imagesavealpha($thumbImg, true);
+    }
+
+    imagecopyresampled($thumbImg, $img, 0, 0, 0, 0, $thumbWidth, $thumbHeight, $width, $height);
+
+    $success = false;
+    switch ($mime) {
+        case 'image/jpeg':
+            $success = imagejpeg($thumbImg, $thumbPath, 80);
+            break;
+        case 'image/png':
+            $success = imagepng($thumbImg, $thumbPath, 8); // 0 (chất lượng cao) -> 9 (chất lượng thấp)
+            break;
+    }
+
+    imagedestroy($img);
+    imagedestroy($thumbImg);
+
+    return $success;
+}
+
+
+
 if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
     // Mảng lưu các lỗi
     $errors = array();
@@ -31,7 +129,7 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
 
         // Kiểm tra định dạng file
         if (in_array($file_ext, $expensions) === false) {
-            $errors[] = "File <strong>$file_name</strong>: Không chấp nhận định dạng ảnh có đuôi này, mời bạn chọn JPEG hoặc PNG.";
+            $errors[] = "File <strong>$file_name</strong>: Không chấp nhận định dạng ảnh có đuôi này, mời bạn chọn JPEG, JPG hoặc PNG.";
             $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
                        VALUES (NULL, $user_id, 'fail', 'Định dạng file không hợp lệ: $file_name')";
             $ocon->query($logSql);
@@ -63,11 +161,20 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
             if (!is_dir("../images")) {
                 mkdir("../images", 0777, true); // Tạo thư mục nếu chưa tồn tại
             }
+            if (!is_dir("../images/thumbs")) {
+                mkdir("../images/thumbs", 0777, true); // Tạo thư mục thumbnails nếu chưa tồn tại
+            }
+
             $file_path = "../images/" . $file_name;
-            if (move_uploaded_file($file_tmp, $file_path)) {
+            $compressedPath = "../images/compressed_" . $file_name;
+            $thumbPath = "../images/thumbs/" . $file_name;
+            // Nén và resize ảnh trước khi lưu
+            if (compressAndResizeImage($file_tmp, $compressedPath, 800, 800, 75)) {
+                 // Tạo thumbnail
+                createThumbnail($compressedPath, $thumbPath);
                 // Lưu thông tin file vào bảng Images
                 $sql = "INSERT INTO images (file_name, file_type, file_size, file_path, user_id) 
-                        VALUES ('$file_name', '$file_type', $file_size, '$file_path', $user_id)";
+                        VALUES ('$file_name', '$file_type', $file_size, '$compressedPath', $user_id)";
                 if ($ocon->query($sql) === TRUE) {
                     $image_id = $ocon->insert_id;
                     $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
@@ -80,9 +187,9 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
                     $ocon->query($logSql);
                 }
             } else {
-                $errors[] = "File <strong>$file_name</strong>: Không thể upload file.";
+                $errors[] = "File <strong>$file_name</strong>: Không thể nén và resize ảnh.";
                 $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
-                           VALUES (NULL, $user_id, 'fail', 'Không thể upload file: $file_name')";
+                           VALUES (NULL, $user_id, 'fail', 'Không thể nén và resize ảnh: $file_name')";
                 $ocon->query($logSql);
             }
         }

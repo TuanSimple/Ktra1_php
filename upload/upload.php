@@ -93,7 +93,7 @@ if (!isset($_SESSION['username'])) {
 
     <div id="mainContent">
         <h3 class="text-center">Upload Ảnh</h3>
-        <form id="uploadForm" action="xlupload.php" method="post" enctype="multipart/form-data">
+        <form id="uploadForm" action="xlupload.php" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
             <div class="mb-3">
                 <label for="images" class="form-label">Chọn ảnh (có thể chọn nhiều ảnh):</label>
                 <input type="file" class="form-control" name="fupload[]" id="images" multiple>
@@ -104,6 +104,17 @@ if (!isset($_SESSION['username'])) {
         </form>
     </div>
 
+    <script>
+    function validateForm() {
+        const fileInput = document.getElementById('images');
+        if (fileInput.files.length === 0) {
+            alert('Vui lòng chọn ít nhất một file để tải lên.');
+            return false; // Ngăn form gửi đi
+        }
+        return true; // Cho phép gửi form
+    }
+</script>
+</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
