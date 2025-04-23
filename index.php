@@ -106,10 +106,10 @@ if (!isset($_SESSION['username'])) {
             <a href="list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
                 <i class="bi bi-arrows-angle-expand"></i> Đổi kích thước
             </a>
-            <a href="list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
+            <a href="upload/list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
                 <i class="bi bi-card-image"></i> Danh sách ảnh
             </a>
-            <a href="history.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
+            <a href="upload/history.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
                 <i class="bi bi-clock-history"></i> Lịch sử upload
             </a>
         </div>

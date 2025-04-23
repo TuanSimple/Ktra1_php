@@ -1,4 +1,3 @@
-<!-- filepath: c:\xampp\htdocs\KiemTra2\history.php -->
 <?php
 session_start();
 require_once('../connection.php');
@@ -16,20 +15,16 @@ $userResult = $ocon->query($userQuery);
 $user = $userResult->fetch_assoc();
 $user_id = $user['id'];
 
-// Truy vấn lịch sử upload
+// Truy vấn danh sách ảnh
 $sql = "
     SELECT 
-        h.id AS log_id,
-        COALESCE(images.file_name, 'Chưa có') AS file_name,
-        COALESCE(images.file_type, 'Chưa có') AS file_type,
-        COALESCE(ROUND(images.file_size / 1024, 2), 'Chưa có') AS file_size_kb,
-        h.status,
-        h.message,
-        h.log_time
-    FROM imageuploadlogs h
-    LEFT JOIN Images images ON h.image_id = images.id
-    WHERE h.user_id = $user_id
-    ORDER BY h.log_time DESC
+        images.id AS image_id,
+        images.file_name,
+        ROUND(images.file_size / 1024, 2) AS file_size_kb,
+        images.file_path
+    FROM Images
+    WHERE images.user_id = $user_id
+    ORDER BY images.upload_time DESC
 ";
 $result = $ocon->query($sql);
 ?>
@@ -39,22 +34,20 @@ $result = $ocon->query($sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch sử Upload</title>
+    <title>Danh sách Ảnh</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container mt-5">
-        <h3 class="text-center">Lịch sử Upload</h3>
+        <h3 class="text-center">Danh sách Ảnh</h3>
         <table class="table table-bordered mt-4">
             <thead class="table-dark">
                 <tr>
                     <th>STT</th>
-                    <th>Tên file ảnh</th>
-                    <th>Loại file</th>
+                    <th>Tên ảnh</th>
                     <th>Kích thước file</th>
-                    <th>Trạng thái</th>
-                    <th>Thông báo</th>
-                    <th>Thời gian upload</th>
+                    <th>Ảnh</th>
+                    <th>Hành động</th>
                 </tr>
             </thead>
             <tbody>
@@ -63,23 +56,26 @@ $result = $ocon->query($sql);
                     <?php while ($row = $result->fetch_assoc()): ?>
                         <tr>
                             <td><?php echo $stt++; ?></td>
-                            <td><?php echo $row['file_name']; ?></td>
-                            <td><?php echo $row['file_type']; ?></td>
-                            <td><?php echo $row['file_size_kb'] . ' KB'?></td>
+                            <td><?php echo htmlspecialchars($row['file_name']); ?></td>
+                            <td><?php echo $row['file_size_kb'] . ' KB'; ?></td>
                             <td>
-                                <?php if ($row['status'] === 'success'): ?>
-                                    <span class="badge bg-success">Thành công</span>
-                                <?php else: ?>
-                                    <span class="badge bg-danger">Thất bại</span>
-                                <?php endif; ?>
+                                <img src="<?php echo htmlspecialchars($row['file_path']); ?>" 
+                                     alt="Thumbnail" 
+                                     style="width: 100px; height: auto;">
                             </td>
-                            <td><?php echo htmlspecialchars($row['message']); ?></td>
-                            <td><?php echo $row['log_time']; ?></td>
+                            <td>
+                                <!-- Nút Sửa -->
+                                <a href="editimage.php?id=<?php echo $row['image_id']; ?>" class="btn btn-info btn-sm text-white">Sửa</a>
+                                <!-- Nút Xóa -->
+                                <a href="deleteimage.php?id=<?php echo $row['image_id']; ?>" 
+                                   class="btn btn-danger btn-sm" 
+                                   onclick="return confirm('Bạn có chắc chắn muốn xóa ảnh này?');">Xóa</a>
+                            </td>
                         </tr>
                     <?php endwhile; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="7" class="text-center">Không có dữ liệu</td>
+                        <td colspan="5" class="text-center">Không có dữ liệu</td>
                     </tr>
                 <?php endif; ?>
             </tbody>

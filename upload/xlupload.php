@@ -32,7 +32,7 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
         // Kiểm tra định dạng file
         if (in_array($file_ext, $expensions) === false) {
             $errors[] = "File <strong>$file_name</strong>: Không chấp nhận định dạng ảnh có đuôi này, mời bạn chọn JPEG hoặc PNG.";
-            $logSql = "INSERT INTO History (image_id, user_id, status, message) 
+            $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
                        VALUES (NULL, $user_id, 'fail', 'Định dạng file không hợp lệ: $file_name')";
             $ocon->query($logSql);
             continue;
@@ -41,7 +41,7 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
         // Kiểm tra kích thước file
         if ($file_size > 2097152) {
             $errors[] = "File <strong>$file_name</strong>: Kích cỡ file nên là 2 MB.";
-            $logSql = "INSERT INTO History (image_id, user_id, status, message) 
+            $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
                        VALUES (NULL, $user_id, 'fail', 'Kích thước file quá lớn: $file_name')";
             $ocon->query($logSql);
             continue;
@@ -52,7 +52,7 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
         $checkResult = $ocon->query($checkSql);
         if ($checkResult->num_rows > 0) {
             $errors[] = "File <strong>$file_name</strong>: File đã tồn tại.";
-            $logSql = "INSERT INTO History (image_id, user_id, status, message) 
+            $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
                        VALUES (NULL, $user_id, 'fail', 'File đã tồn tại: $file_name')";
             $ocon->query($logSql);
             continue;
@@ -70,18 +70,18 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
                         VALUES ('$file_name', '$file_type', $file_size, '$file_path', $user_id)";
                 if ($ocon->query($sql) === TRUE) {
                     $image_id = $ocon->insert_id;
-                    $logSql = "INSERT INTO History (image_id, user_id, status, message) 
+                    $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
                                VALUES ($image_id, $user_id, 'success', 'Upload thành công')";
                     $ocon->query($logSql);
                 } else {
                     $errors[] = "File <strong>$file_name</strong>: Upload thành công nhưng không thể lưu vào cơ sở dữ liệu.";
-                    $logSql = "INSERT INTO History (image_id, user_id, status, message) 
+                    $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
                                VALUES (NULL, $user_id, 'fail', 'Không thể lưu vào cơ sở dữ liệu: $file_name')";
                     $ocon->query($logSql);
                 }
             } else {
                 $errors[] = "File <strong>$file_name</strong>: Không thể upload file.";
-                $logSql = "INSERT INTO History (image_id, user_id, status, message) 
+                $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
                            VALUES (NULL, $user_id, 'fail', 'Không thể upload file: $file_name')";
                 $ocon->query($logSql);
             }
@@ -98,7 +98,7 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
     exit;
 } else {
     // Trường hợp không chọn file
-    $logSql = "INSERT INTO History (image_id, user_id, status, message) 
+    $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
                VALUES (NULL, $user_id, 'fail', 'Không có file nào được chọn để upload')";
     $ocon->query($logSql);
 
