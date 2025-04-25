@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cropped_image']) && i
 
         // Đặt tên file mới
         $newFileName = 'cropped_' . time() . '.png';
-        $uploadDir = '../Uploads/';
+        $uploadDir = 'images/';
         $filePath = $uploadDir . $newFileName;
 
         if (!file_exists($uploadDir)) {
