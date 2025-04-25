@@ -51,7 +51,8 @@ if (!isset($_SESSION['username'])) {
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #6c757d; /* Màu xám */
+            background-color: #6c757d;
+            /* Màu xám */
             color: white;
             border: none;
             border-radius: 5px;
@@ -62,11 +63,13 @@ if (!isset($_SESSION['username'])) {
         }
 
         .btn-custom:hover {
-            background-color: #5a6268; /* Màu xám đậm hơn khi hover */
+            background-color: #5a6268;
+            /* Màu xám đậm hơn khi hover */
         }
+
         .btn-equal {
             width: 200px;
-            text-align: center; 
+            text-align: center;
         }
     </style>
 </head>
@@ -97,13 +100,13 @@ if (!isset($_SESSION['username'])) {
             <a href="upload/upload.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
                 <i class="bi bi-cloud-upload-fill"></i> Upload
             </a>
-            <a href="list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
+            <a href="upload/list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
                 <i class="bi bi-scissors"></i> Cắt ảnh
             </a>
-            <a href="list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
+            <a href="upload/list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
                 <i class="bi bi-arrow-repeat"></i> Xoay ảnh
             </a>
-            <a href="list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
+            <a href="upload/list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
                 <i class="bi bi-arrows-angle-expand"></i> Đổi kích thước
             </a>
             <a href="upload/list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
