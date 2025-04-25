@@ -3,7 +3,7 @@ session_start();
 
 // Kiểm tra nếu người dùng chưa đăng nhập, chuyển hướng về trang đăng nhập
 if (!isset($_SESSION['username'])) {
-    header("Location: users/login.php");
+    header("Location: ../users/login.php");
     exit;
 }
 ?>
@@ -84,7 +84,7 @@ if (!isset($_SESSION['username'])) {
         <div class="d-flex justify-content-center align-items-center flex-grow-1">
             <span class="fs-5 fw-bold text-secondary me-4">Xin chào, <?php echo $_SESSION['fullname']; ?></span>
             <li class="nav-item">
-                <a class="nav-link fs-5 fw-bold text-secondary" href="users/logout.php">
+                <a class="nav-link fs-5 fw-bold text-secondary" href="../users/login.php">
                     <i class="bi bi-box-arrow-right"></i> Đăng xuất
                 </a>
             </li>
