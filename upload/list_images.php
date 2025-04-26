@@ -71,8 +71,8 @@ $result = $ocon->query($sql);
                                 style="width: 100px; height: auto;">
                             </td>
                             <td>
-                                <!-- Nút Sửa -->
-                                <a href="editimage.php?id=<?php echo $row['image_id']; ?>" class="btn btn-info btn-sm text-white">Sửa</a>
+                                <!-- Nút Chỉnh ảnh -->
+                                <a href="editimage.php?id=<?php echo $row['image_id']; ?>" class="btn btn-info btn-sm text-white">Chỉnh ảnh</a>
                                 <!-- Nút Xóa -->
                                 <a href="deleteimage.php?id=<?php echo $row['image_id']; ?>" 
                                    class="btn btn-danger btn-sm" 
