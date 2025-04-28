@@ -59,23 +59,24 @@ $result = $ocon->query($sql);
                             <td><?php echo htmlspecialchars($row['file_name']); ?></td>
                             <td><?php echo $row['file_size_kb'] . ' KB'; ?></td>
                             <td>
-                            <?php
-                            $thumbPath = str_replace('images/compressed/', 'images/thumbs/', $row['file_path']);
-                            if (!file_exists($thumbPath)) {
-                                $thumbPath = $row['file_path'];
-                            }
-                            $fullImagePath = str_replace('images/thumbs/', 'images/compressed/', $thumbPath);
-                            ?>
-                            <img src="<?php echo htmlspecialchars($thumbPath); ?>" 
-                                alt="Thumbnail" 
-                                style="width: 100px; height: auto; cursor: pointer;" 
-                                onclick="openImage('<?php echo htmlspecialchars($fullImagePath); ?>')">
+                                <?php
+                                $thumbPath = str_replace('images/compressed/', 'images/thumbs/', $row['file_path']);
+                                if (!file_exists($thumbPath)) {
+                                    $thumbPath = $row['file_path'];
+                                }
+                                $fullImagePath = str_replace('images/thumbs/', 'images/compressed/', $thumbPath);
+                                ?>
+                                <img src="<?php echo htmlspecialchars($thumbPath); ?>" 
+                                     alt="Thumbnail" 
+                                     style="width: 100px; height: auto; cursor: pointer;" 
+                                     onclick="openImage('<?php echo htmlspecialchars($fullImagePath); ?>')">
                             </td>
                             <td>
                                 <!-- Nút Chỉnh ảnh -->
-                                <a href="editimage.php?id=<?php echo htmlspecialchars($row['image_id']); ?>">
-                                    <button class="btn btn-info btn-sm text-white">Chỉnh sửa</button>
-                                </a>                                
+                                <a href="editimage.php?id=<?php echo htmlspecialchars($row['image_id']); ?>" 
+                                   class="btn btn-info btn-sm text-white me-2">
+                                    Chỉnh sửa
+                                </a>
                                 <!-- Nút Xóa -->
                                 <a href="deleteimage.php?id=<?php echo $row['image_id']; ?>" 
                                    class="btn btn-danger btn-sm" 
@@ -116,6 +117,6 @@ $result = $ocon->query($sql);
         }
     });
     </script>
-     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
