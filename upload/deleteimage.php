@@ -19,7 +19,7 @@ if ($result->num_rows > 0) {
     }
 
     // Xóa thumbnail nếu tồn tại
-    $thumbPath = str_replace('uploads/', 'uploads/thumbs/', $filePath);
+    $thumbPath = str_replace('images/compressed/', 'images/thumbs/', $filePath);
     if (file_exists($thumbPath)) {
         unlink($thumbPath);
     }

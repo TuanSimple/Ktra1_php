@@ -60,19 +60,22 @@ $result = $ocon->query($sql);
                             <td><?php echo $row['file_size_kb'] . ' KB'; ?></td>
                             <td>
                             <?php
-                            $thumbPath = str_replace('uploads/', 'uploads/thumbs/', $row['file_path']);
+                            $thumbPath = str_replace('images/compressed/', 'images/thumbs/', $row['file_path']);
                             if (!file_exists($thumbPath)) {
-                                // Nếu thumbnail không tồn tại, sử dụng ảnh gốc
                                 $thumbPath = $row['file_path'];
                             }
+                            $fullImagePath = str_replace('images/thumbs/', 'images/compressed/', $thumbPath);
                             ?>
                             <img src="<?php echo htmlspecialchars($thumbPath); ?>" 
                                 alt="Thumbnail" 
-                                style="width: 100px; height: auto;">
+                                style="width: 100px; height: auto; cursor: pointer;" 
+                                onclick="openImage('<?php echo htmlspecialchars($fullImagePath); ?>')">
                             </td>
                             <td>
                                 <!-- Nút Chỉnh ảnh -->
-                                <a href="editimage.php?id=<?php echo $row['image_id']; ?>" class="btn btn-info btn-sm text-white">Chỉnh ảnh</a>
+                                <a href="editimage.php?id=<?php echo htmlspecialchars($row['image_id']); ?>">
+                                    <button class="btn btn-info btn-sm text-white">Chỉnh sửa</button>
+                                </a>                                
                                 <!-- Nút Xóa -->
                                 <a href="deleteimage.php?id=<?php echo $row['image_id']; ?>" 
                                    class="btn btn-danger btn-sm" 
@@ -92,6 +95,27 @@ $result = $ocon->query($sql);
             <a href="../index.php" class="btn btn-primary">Về Trang Chính</a>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Modal hiển thị ảnh lớn -->
+    <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:9999;">
+        <img id="modalImage" src="" alt="Ảnh lớn" style="max-width:90%; max-height:90%; box-shadow:0 0 20px #fff; border-radius:10px;">
+    </div>
+
+    <script>
+    function openImage(src) {
+        var modal = document.getElementById('imageModal');
+        var modalImg = document.getElementById('modalImage');
+        modal.style.display = 'flex';
+        modalImg.src = src;
+    }
+
+    // Khi click vào ngoài ảnh thì đóng modal
+    document.getElementById('imageModal').addEventListener('click', function(e) {
+        if (e.target.id === 'imageModal') {
+            this.style.display = 'none';
+        }
+    });
+    </script>
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -57,7 +57,8 @@ function compressAndResizeImage($source, $destination, $maxWidth, $maxHeight, $q
 
     return true;
 }
-// Hàm tạo thumbnail (đã chỉnh sửa)
+
+// Hàm tạo thumbnail
 function createThumbnail($sourcePath, $thumbPath, $thumbWidth = 200) {
     $imageDetails = getimagesize($sourcePath);
     $width = $imageDetails[0];
@@ -104,8 +105,6 @@ function createThumbnail($sourcePath, $thumbPath, $thumbWidth = 200) {
     return $success;
 }
 
-
-
 if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
     // Mảng lưu các lỗi
     $errors = array();
@@ -130,74 +129,43 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
         // Kiểm tra định dạng file
         if (in_array($file_ext, $expensions) === false) {
             $errors[] = "File <strong>$file_name</strong>: Không chấp nhận định dạng ảnh có đuôi này, mời bạn chọn JPEG, JPG hoặc PNG.";
-            $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
-                       VALUES (NULL, $user_id, 'fail', 'Định dạng file không hợp lệ: $file_name')";
-            $ocon->query($logSql);
             continue;
         }
 
         // Kiểm tra kích thước file
         if ($file_size > 2097152) {
             $errors[] = "File <strong>$file_name</strong>: Kích cỡ file nên là 2 MB.";
-            $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
-                       VALUES (NULL, $user_id, 'fail', 'Kích thước file quá lớn: $file_name')";
-            $ocon->query($logSql);
-            continue;
-        }
-
-        // Kiểm tra trùng tên file trong cơ sở dữ liệu
-        $checkSql = "SELECT * FROM images WHERE file_name = '$file_name'";
-        $checkResult = $ocon->query($checkSql);
-        if ($checkResult->num_rows > 0) {
-            $errors[] = "File <strong>$file_name</strong>: File đã tồn tại.";
-            $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
-                       VALUES (NULL, $user_id, 'fail', 'File đã tồn tại: $file_name')";
-            $ocon->query($logSql);
             continue;
         }
 
         // Nếu không có lỗi, tiến hành upload
         if (empty($errors)) {
-            if (!is_dir("../images")) {
-                mkdir("../images", 0777, true); // Tạo thư mục nếu chưa tồn tại
+            if (!is_dir("../images/compressed")) {
+                mkdir("../images/compressed", 0777, true); // Tạo thư mục nếu chưa tồn tại
             }
             if (!is_dir("../images/thumbs")) {
                 mkdir("../images/thumbs", 0777, true); // Tạo thư mục thumbnails nếu chưa tồn tại
             }
 
-            $file_path = "../images/" . $file_name;
-            $compressedPath = "../images/compressed_" . $file_name;
+            $compressedPath = "../images/compressed/" . $file_name;
             $thumbPath = "../images/thumbs/" . $file_name;
+
             // Nén và resize ảnh trước khi lưu
             if (compressAndResizeImage($file_tmp, $compressedPath, 800, 800, 75)) {
-                 // Tạo thumbnail
+                // Lấy dung lượng ảnh sau khi resize
+                $resizedFileSize = filesize($compressedPath);
+
+                // Tạo thumbnail
                 createThumbnail($compressedPath, $thumbPath);
+
                 // Lưu thông tin file vào bảng Images
                 $sql = "INSERT INTO images (file_name, file_type, file_size, file_path, user_id) 
-                        VALUES ('$file_name', '$file_type', $file_size, '$compressedPath', $user_id)";
-                if ($ocon->query($sql) === TRUE) {
-                    $image_id = $ocon->insert_id;
-                    $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
-                               VALUES ($image_id, $user_id, 'success', 'Upload thành công')";
-                    $ocon->query($logSql);
-                } else {
-                    $errors[] = "File <strong>$file_name</strong>: Upload thành công nhưng không thể lưu vào cơ sở dữ liệu.";
-                    $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
-                               VALUES (NULL, $user_id, 'fail', 'Không thể lưu vào cơ sở dữ liệu: $file_name')";
-                    $ocon->query($logSql);
-                }
+                        VALUES ('$file_name', '$file_type', $resizedFileSize, '$compressedPath', $user_id)";
+                $ocon->query($sql);
             } else {
                 $errors[] = "File <strong>$file_name</strong>: Không thể nén và resize ảnh.";
-                $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
-                           VALUES (NULL, $user_id, 'fail', 'Không thể nén và resize ảnh: $file_name')";
-                $ocon->query($logSql);
             }
         }
-    }
-
-    // Lưu lỗi vào session để hiển thị trên trang history
-    if (!empty($errors)) {
-        $_SESSION['upload_errors'] = $errors;
     }
 
     // Chuyển hướng sang trang history.php
@@ -205,10 +173,6 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
     exit;
 } else {
     // Trường hợp không chọn file
-    $logSql = "INSERT INTO imageuploadlogs (image_id, user_id, status, message) 
-               VALUES (NULL, $user_id, 'fail', 'Không có file nào được chọn để upload')";
-    $ocon->query($logSql);
-
     $_SESSION['upload_errors'] = ["Không có file nào được chọn để upload."];
     header("Location: history.php");
     exit;

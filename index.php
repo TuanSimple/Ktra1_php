@@ -101,15 +101,6 @@ if (!isset($_SESSION['username'])) {
                 <i class="bi bi-cloud-upload-fill"></i> Upload
             </a>
             <a href="upload/list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
-                <i class="bi bi-scissors"></i> Cắt ảnh
-            </a>
-            <a href="upload/list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
-                <i class="bi bi-arrow-repeat"></i> Xoay ảnh
-            </a>
-            <a href="upload/list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
-                <i class="bi bi-arrows-angle-expand"></i> Đổi kích thước
-            </a>
-            <a href="upload/list_images.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
                 <i class="bi bi-card-image"></i> Danh sách ảnh
             </a>
             <a href="upload/history.php" class="nav-link fs-5 fw-bold text-secondary border border-secondary rounded p-2 btn-equal">
