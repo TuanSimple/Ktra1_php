@@ -12,6 +12,25 @@ if (!isset($_SESSION['username'])) {
 function compressAndResizeImage($source, $destination, $maxWidth, $maxHeight, $quality) {
     list($width, $height, $imageType) = getimagesize($source);
 
+    // Nếu ảnh nhỏ hơn maxWidth và maxHeight, sao chép ảnh gốc
+    if ($width <= $maxWidth && $height <= $maxHeight) {
+        switch ($imageType) {
+            case IMAGETYPE_JPEG:
+                $sourceImage = imagecreatefromjpeg($source);
+                imagejpeg($sourceImage, $destination, $quality);
+                imagedestroy($sourceImage);
+                break;
+            case IMAGETYPE_PNG:
+                $sourceImage = imagecreatefrompng($source);
+                imagepng($sourceImage, $destination, round($quality / 10));
+                imagedestroy($sourceImage);
+                break;
+            default:
+                return false; // Không hỗ trợ định dạng khác
+        }
+        return true;
+    }
+
     // Tính toán kích thước mới
     $ratio = $width / $height;
     if ($maxWidth / $maxHeight > $ratio) {
@@ -161,7 +180,24 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
                 // Lưu thông tin file vào bảng Images
                 $sql = "INSERT INTO images (file_name, file_type, file_size, file_path, user_id) 
                         VALUES ('$file_name', '$file_type', $resizedFileSize, '$compressedPath', $user_id)";
-                $ocon->query($sql);
+                if ($ocon->query($sql)) {
+                    // Lấy ID của ảnh vừa được thêm
+                    $imageId = $ocon->insert_id;
+
+                    // Ghi log vào bảng imageuploadlogs
+                    $status = 'success';
+                    $message = 'Upload thành công';
+                    $logSql = "INSERT INTO imageuploadlogs (user_id, image_id, status, message, log_time) 
+                               VALUES ($user_id, $imageId, '$status', '$message', NOW())";
+                    $ocon->query($logSql);
+                } else {
+                    // Ghi log lỗi nếu không thể lưu ảnh
+                    $status = 'error';
+                    $message = 'Không thể lưu ảnh vào cơ sở dữ liệu';
+                    $logSql = "INSERT INTO imageuploadlogs (user_id, image_id, status, message, log_time) 
+                               VALUES ($user_id, NULL, '$status', '$message', NOW())";
+                    $ocon->query($logSql);
+                }
             } else {
                 $errors[] = "File <strong>$file_name</strong>: Không thể nén và resize ảnh.";
             }
