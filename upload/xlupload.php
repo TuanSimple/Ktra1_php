@@ -12,6 +12,25 @@ if (!isset($_SESSION['username'])) {
 function compressAndResizeImage($source, $destination, $maxWidth, $maxHeight, $quality) {
     list($width, $height, $imageType) = getimagesize($source);
 
+    // Nếu ảnh nhỏ hơn maxWidth và maxHeight, sao chép ảnh gốc
+    if ($width <= $maxWidth && $height <= $maxHeight) {
+        switch ($imageType) {
+            case IMAGETYPE_JPEG:
+                $sourceImage = imagecreatefromjpeg($source);
+                imagejpeg($sourceImage, $destination, $quality);
+                imagedestroy($sourceImage);
+                break;
+            case IMAGETYPE_PNG:
+                $sourceImage = imagecreatefrompng($source);
+                imagepng($sourceImage, $destination, round($quality / 10));
+                imagedestroy($sourceImage);
+                break;
+            default:
+                return false; // Không hỗ trợ định dạng khác
+        }
+        return true;
+    }
+
     // Tính toán kích thước mới
     $ratio = $width / $height;
     if ($maxWidth / $maxHeight > $ratio) {
@@ -128,14 +147,19 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
 
         // Kiểm tra định dạng file
         if (in_array($file_ext, $expensions) === false) {
-            $errors[] = "File <strong>$file_name</strong>: Không chấp nhận định dạng ảnh có đuôi này, mời bạn chọn JPEG, JPG hoặc PNG.";
-            continue;
+            $errors[] = "File $file_name: Không chấp nhận định dạng ảnh có đuôi này, mời bạn chọn JPEG, JPG hoặc PNG.";
         }
 
         // Kiểm tra kích thước file
         if ($file_size > 2097152) {
-            $errors[] = "File <strong>$file_name</strong>: Kích cỡ file nên là 2 MB.";
-            continue;
+            $errors[] = "File $file_name: Kích cỡ file nên là 2 MB.";
+        }
+
+        // Kiểm tra trùng tên file trong cơ sở dữ liệu
+        $checkSql = "SELECT * FROM images WHERE file_name = '$file_name'";
+        $checkResult = $ocon->query($checkSql);
+        if ($checkResult->num_rows > 0) {
+            $errors[] = "File $file_name: Tên file đã tồn tại, vui lòng đổi tên file trước khi upload.";
         }
 
         // Nếu không có lỗi, tiến hành upload
@@ -161,10 +185,38 @@ if (isset($_FILES['fupload']) && !empty($_FILES['fupload']['name'][0])) {
                 // Lưu thông tin file vào bảng Images
                 $sql = "INSERT INTO images (file_name, file_type, file_size, file_path, user_id) 
                         VALUES ('$file_name', '$file_type', $resizedFileSize, '$compressedPath', $user_id)";
-                $ocon->query($sql);
+                if ($ocon->query($sql)) {
+                    // Lấy ID của ảnh vừa được thêm
+                    $imageId = $ocon->insert_id;
+
+                    // Ghi log vào bảng imageuploadlogs
+                    $status = 'success';
+                    $message = 'Upload thành công';
+                    $logSql = "INSERT INTO imageuploadlogs (user_id, image_id, status, message, log_time) 
+                               VALUES ($user_id, $imageId, '$status', '$message', NOW())";
+                    $ocon->query($logSql);
+                } else {
+                    // Ghi log lỗi nếu không thể lưu ảnh
+                    $status = 'error';
+                    $message = 'Không thể lưu ảnh vào cơ sở dữ liệu';
+                    $logSql = "INSERT INTO imageuploadlogs (user_id, image_id, status, message, log_time) 
+                               VALUES ($user_id, NULL, '$status', '$message', NOW())";
+                    $ocon->query($logSql);
+                }
             } else {
                 $errors[] = "File <strong>$file_name</strong>: Không thể nén và resize ảnh.";
+                $status = 'fail';
+                $logSql = "INSERT INTO imageuploadlogs (user_id, image_id, status, message, log_time) 
+                        VALUES ($user_id, NULL, '$status', '$errorMessage', NOW())";
+                $ocon->query($logSql);
             }
+        } else {
+            $errorMessages = implode("; ", $errors); // Ghép lỗi thành 1 chuỗi
+    
+            $status = 'fail';
+            $logSql = "INSERT INTO imageuploadlogs (user_id, image_id, status, message, log_time) 
+                       VALUES ($user_id, NULL, '$status', '$errorMessages', NOW())";
+            $ocon->query($logSql);
         }
     }
 

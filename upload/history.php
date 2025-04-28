@@ -13,8 +13,14 @@ if (!isset($_SESSION['username'])) {
 $username = $_SESSION['username'];
 $userQuery = "SELECT id FROM users WHERE username = '$username'";
 $userResult = $ocon->query($userQuery);
+
+if (!$userResult) {
+    echo "Lỗi truy vấn user: " . $ocon->error;
+    exit;
+}
+
 $user = $userResult->fetch_assoc();
-$user_id = $user['id'];
+$user_id = (int)$user['id']; // ép kiểu an toàn
 
 // Truy vấn lịch sử upload
 $sql = "
@@ -32,6 +38,11 @@ $sql = "
     ORDER BY h.log_time DESC
 ";
 $result = $ocon->query($sql);
+
+if (!$result) {
+    echo "Lỗi truy vấn lịch sử upload: " . $ocon->error;
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -58,7 +69,7 @@ $result = $ocon->query($sql);
                 </tr>
             </thead>
             <tbody>
-                <?php if ($result->num_rows > 0): ?>
+                <?php if ($result && $result->num_rows > 0): ?>
                     <?php $stt = 1; ?>
                     <?php while ($row = $result->fetch_assoc()): ?>
                         <tr>
