@@ -56,6 +56,10 @@ if (!$result) {
 <body>
     <div class="container mt-5">
         <h3 class="text-center">Lịch sử Upload</h3>
+        <div class="text-center mt-4">
+            <a href="upload.php" class="btn btn-secondary">Quay lại trang Upload</a>
+            <a href="../index.php" class="btn btn-primary">Về Trang Chính</a>
+        </div>
         <table class="table table-bordered mt-4">
             <thead class="table-dark">
                 <tr>
@@ -95,10 +99,6 @@ if (!$result) {
                 <?php endif; ?>
             </tbody>
         </table>
-        <div class="text-center mt-4">
-            <a href="upload.php" class="btn btn-secondary">Quay lại trang Upload</a>
-            <a href="../index.php" class="btn btn-primary">Về Trang Chính</a>
-        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -23,6 +23,11 @@ if ($result->num_rows > 0) {
     if (file_exists($thumbPath)) {
         unlink($thumbPath);
     }
+    // Xoá ảnh gốc backup nếu tồn tại
+    $backupPath = str_replace('images/compressed/', 'images/backup/', $filePath);
+    if (file_exists($backupPath)) {
+        unlink($backupPath);
+    }
 
     // Xóa bản ghi trong CSDL
     $sql_del = "DELETE FROM images WHERE id = $maAnh";

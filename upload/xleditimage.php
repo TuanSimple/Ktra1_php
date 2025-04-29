@@ -30,6 +30,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cropped_image']) && i
 
         $oldFilePath = $image['file_path']; // Đường dẫn ảnh cũ
 
+        // Tạo thư mục sao lưu nếu chưa tồn tại
+        $backupDir = '../images/backup';
+        if (!is_dir($backupDir)) {
+            if (!mkdir($backupDir, 0777, true)) {
+                error_log("Failed to create backup directory: $backupDir");
+                echo "Lỗi khi tạo thư mục sao lưu.";
+                exit;
+            }
+        }
+
+        // Tạo tên tệp sao lưu
+        $backupFileName = basename($oldFilePath); // Lấy tên file từ đường dẫn ảnh cũ
+        $backupPath = $backupDir . '/' . $backupFileName;
+
+        // Sao lưu ảnh gốc
+        if (!file_exists($backupPath)) { // Chỉ sao lưu nếu file chưa tồn tại trong backup
+            if (!copy($oldFilePath, $backupPath)) {
+                error_log("Failed to backup image: $oldFilePath to $backupPath");
+                echo "Lỗi khi sao lưu ảnh.";
+                exit;
+            }
+        } else {
+            // Nếu tệp sao lưu đã tồn tại, ghi log nhưng không thực hiện sao lưu lại
+            error_log("Backup already exists: $backupPath");
+        }
+
         // Ghi đè ảnh cũ
         if (file_put_contents($oldFilePath, $decodedData)) {
             $fileSize = filesize($oldFilePath);

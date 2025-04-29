@@ -40,6 +40,10 @@ $result = $ocon->query($sql);
 <body>
     <div class="container mt-5">
         <h3 class="text-center">Danh sách Ảnh</h3>
+        <div class="text-center mt-4">
+            <a href="upload.php" class="btn btn-secondary">Quay lại trang Upload</a>
+            <a href="../index.php" class="btn btn-primary">Về Trang Chính</a>
+        </div>
         <table class="table table-bordered mt-4">
             <thead class="table-dark">
                 <tr>
@@ -66,11 +70,10 @@ $result = $ocon->query($sql);
                                 }
                                 $fullImagePath = str_replace('images/thumbs/', 'images/compressed/', $thumbPath);
                                 ?>
-                                <img src="<?php echo htmlspecialchars($thumbPath); ?>" 
+                                    <img src="<?php echo htmlspecialchars($thumbPath) . '?t=' . time(); ?>" 
                                      alt="Thumbnail" 
                                      style="width: 100px; height: auto; cursor: pointer;" 
-                                     onclick="openImage('<?php echo htmlspecialchars($fullImagePath); ?>')">
-                            </td>
+                                     onclick="openImage('<?php echo htmlspecialchars($fullImagePath) . '?t=' . time(); ?>')">                            </td>
                             <td>
                                 <!-- Nút Chỉnh ảnh -->
                                 <a href="editimage.php?id=<?php echo htmlspecialchars($row['image_id']); ?>" 
@@ -91,10 +94,6 @@ $result = $ocon->query($sql);
                 <?php endif; ?>
             </tbody>
         </table>
-        <div class="text-center mt-4">
-            <a href="upload.php" class="btn btn-secondary">Quay lại trang Upload</a>
-            <a href="../index.php" class="btn btn-primary">Về Trang Chính</a>
-        </div>
     </div>
 
     <!-- Modal hiển thị ảnh lớn -->

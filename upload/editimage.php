@@ -56,6 +56,7 @@ if (!$image) {
                 <button type="button" class="btn btn-success" onclick="cropImage()">Cắt ảnh</button>
                 <button type="submit" class="btn btn-primary">Lưu ảnh</button>
                 <button type="button" class="btn btn-secondary" onclick="resetImage()">Hủy</button>
+                <a href="undoedit.php?id=<?php echo htmlspecialchars($image['id']); ?>" class="btn btn-warning" onclick="return confirm('Bạn có chắc chắn muốn hoàn tác ảnh này về bản gốc?');">Hoàn tác</a>
             </div>
         </form>
     </div>
